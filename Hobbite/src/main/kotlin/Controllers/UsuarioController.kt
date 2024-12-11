@@ -177,4 +177,29 @@ object UsuarioController {
 
         return idUsuario
     }
+
+    fun admin(login: Login): Boolean{
+        Conexion.abrirConexion()
+        var resultado = false
+
+        try {
+            val consulta = "SELECT COUNT(*) FROM USUARIO WHERE gmail=? AND contrasena =? AND admin=1"
+            val psmt = Conexion.conexion?.prepareStatement(consulta)
+            psmt?.setString(1, login.gmail)
+            psmt?.setString(2, login.contrasena)
+
+            val resultSet = psmt?.executeQuery()
+
+            if (resultSet?.next() == true) {
+                val count = resultSet.getInt(1)
+                resultado = count > 0
+            }
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            Conexion.cerrarConexion()
+        }
+
+        return resultado
+    }
 }
