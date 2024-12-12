@@ -159,9 +159,9 @@ fun Route.userRoutes() {
                 val usuarioRegistrado = UsuarioController.postUsuario(usuario)
 
                 if (usuarioRegistrado) {
-                    call.respond(HttpStatusCode.Created, "Usuario registrado correctamente")
+                    call.respond(HttpStatusCode.Created, usuarioRegistrado)
                 } else {
-                    call.respond(HttpStatusCode.Conflict, "El usuario ya existe")
+                    call.respond(HttpStatusCode.Conflict)
                 }
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.BadRequest, e)
@@ -184,6 +184,71 @@ fun Route.userRoutes() {
             } catch (e: Exception) {
                 println("Error al recibir la solicitud: $e")
                 call.respond(HttpStatusCode.BadRequest, "Error de deserialización")
+            }
+        }
+    }
+
+    route("/juego"){
+        authenticate{
+            post("crear"){
+                val principal = call.principal<JWTPrincipal>()
+                var gmail = principal?.payload?.getClaim("gmail")?.asString()
+                var contrasena = principal?.payload?.getClaim("contrasena")?.asString()
+                var usu = Login(gmail,contrasena)
+                var idUsuario = UsuarioController.getIdUsuarioLogeado(usu)
+
+                var idPartida = PartidaControladorGeneral.iniciarPartida(20,idUsuario)
+
+                if (idPartida) {
+                    call.respond(HttpStatusCode.OK, mapOf("mensaje" to "Partida iniciada exitosamente"))
+
+                } else {
+                    call.respond(HttpStatusCode.InternalServerError, mapOf("mensaje" to "Error al iniciar la partida"))
+                }
+            }
+
+            get("partidas"){
+                val principal = call.principal<JWTPrincipal>()
+                var gmail = principal?.payload?.getClaim("gmail")?.asString()
+                var contrasena = principal?.payload?.getClaim("contrasena")?.asString()
+                var usu = Login(gmail,contrasena)
+                var idUsuario = UsuarioController.getIdUsuarioLogeado(usu)
+
+                val partidas = PartidaControlador.obtenerPartidas(idUsuario)
+                val responseMap = mapOf("partidas" to partidas)
+                call.respond(HttpStatusCode.OK, responseMap)
+            }
+
+            post("/jugar/{id}/{casilla}") {
+                try {
+                    val principal = call.principal<JWTPrincipal>()
+                    var gmail = principal?.payload?.getClaim("gmail")?.asString()
+                    var contrasena = principal?.payload?.getClaim("contrasena")?.asString()
+                    var usu = Login(gmail,contrasena)
+                    var idUsuario = UsuarioController.getIdUsuarioLogeado(usu)
+
+                    val idPartida = call.parameters["id"]?.toIntOrNull()
+                    val casilla = call.parameters["casilla"]?.toIntOrNull()
+
+                    if (idPartida != null && casilla != null) {
+                        val tienePartida = PartidaControlador.tienePartida(idUsuario, idPartida)
+
+
+                        if (tienePartida) {
+                            val resultado = PartidaControladorGeneral.jugar(idPartida, casilla)
+
+                            val resultadoJson = Json.encodeToString(ResultadoPartida(resultado))
+
+                            call.respond(HttpStatusCode.OK, resultadoJson)
+                        } else {
+                            call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "El usuario no tiene una partida con ese número"))
+                        }
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "ID de partida o casilla no válido"))
+                    }
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, e)
+                }
             }
         }
     }

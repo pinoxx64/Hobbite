@@ -1,5 +1,6 @@
 package com.example
 
+import Rutes.userRoutes
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
@@ -13,6 +14,7 @@ fun Application.configureRouting() {
             call.respondText("Hello World!")
         }
         // Static plugin. Try to access `/static/index.html`
-        staticResources("/static", "static")
+        //staticResources("/static", "static")
+        userRoutes()
     }
 }
