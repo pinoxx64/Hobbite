@@ -34,7 +34,7 @@ object UsuarioController {
         return usuarios
     }
 
-    fun getUsuarioPorId(id: Int) : Usuario? {
+    fun getUsuarioPorId(id: Int?) : Usuario? {
         Conexion.abrirConexion()
 
         try {
@@ -128,15 +128,15 @@ object UsuarioController {
         return false
     }
 
-    fun login(login: Login) : Boolean{
+    fun login(usuario: Usuario) : Boolean{
         Conexion.abrirConexion()
         var resultado = false
 
         try {
             val consulta = "SELECT COUNT(*) FROM usuario WHERE gmail=? AND contrasena =?"
             val psmt = Conexion.conexion?.prepareStatement(consulta)
-            psmt?.setString(1, login.gmail)
-            psmt?.setString(2, login.contrasena)
+            psmt?.setString(1, usuario.gmail)
+            psmt?.setString(2, usuario.contrasena)
 
             val resultSet = psmt?.executeQuery()
 
