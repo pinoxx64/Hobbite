@@ -1,6 +1,6 @@
 package Controladores
 
-import Modelos.PartidaPersonaje
+import Models.PersonajePartida
 
 object Partida {
     val pruebas = charArrayOf('M', 'H', 'F')
@@ -27,13 +27,13 @@ object Partida {
         return tableroJugador.toString().trim()
     }
 
-    fun generarPersonajes(idPartida:Int): ArrayList<PartidaPersonaje> {
-        val personajes = ArrayList<PartidaPersonaje>()
+    fun generarPersonajes(idPartida:Int): ArrayList<PersonajePartida> {
+        val personajes = ArrayList<PersonajePartida>()
         for (i in 1..3) {
             personajes.add(
-                PartidaPersonaje(
-                    id_pers = i,
-                    id_part = idPartida,
+                PersonajePartida(
+                    idPers = i,
+                    id = idPartida,
                     capacidad = 50,
                     estado = 1
                 )
